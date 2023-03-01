@@ -26,4 +26,8 @@
     <ProjectReference Include="..\OnSale.Common\OnSale.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\categories\" />
+  </ItemGroup>
+
 </Project>

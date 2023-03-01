@@ -16,12 +16,14 @@ namespace OnSale.Web.Controllers
         private readonly DataContext _context;
         private readonly IBlobHelper _blobHelper;
         private readonly IConverterHelper _converterHelper;
+        private readonly IImageHelper _imageHelper;
 
-        public CategoriesController(DataContext context, IBlobHelper blobHelper, IConverterHelper converterHelper)
+        public CategoriesController(DataContext context, IBlobHelper blobHelper, IConverterHelper converterHelper, IImageHelper imageHelper)
         {
             _context = context;
             _blobHelper = blobHelper;
             _converterHelper = converterHelper;
+            _imageHelper = imageHelper;
         }
 
         public async Task<IActionResult> Index()
@@ -42,15 +44,16 @@ namespace OnSale.Web.Controllers
             if (ModelState.IsValid)
             {
                 Guid imageId = Guid.Empty;
+                var path = string.Empty;
 
                 if (model.ImageFile != null)
                 {
-                    imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "categories");
+                    path = await _imageHelper.UploadImageAsync(model.ImageFile, "categories");
                 }
 
                 try
                 {
-                    Category category = _converterHelper.ToCategory(model, imageId, true);
+                    Category category = _converterHelper.ToCategory(model, imageId, path, true);
                     _context.Add(category);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -99,15 +102,17 @@ namespace OnSale.Web.Controllers
             if (ModelState.IsValid)
             {
                 Guid imageId = model.ImageId;
+                var path = model.ImageUrl;
 
                 if (model.ImageFile != null)
                 {
-                    imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "categories");
+                    //imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "categories");
+                    path = await _imageHelper.UploadImageAsync(model.ImageFile, "categories");
                 }
 
                 try
                 {
-                    Category category = _converterHelper.ToCategory(model, imageId, false);
+                    Category category = _converterHelper.ToCategory(model, imageId, path, false);
                     _context.Update(category);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -149,8 +154,12 @@ namespace OnSale.Web.Controllers
 
             try
             {
+                var pathImage = category.ImageUrl;
+
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
+
+                _imageHelper.DeleteImage(pathImage);
             }
             catch (Exception ex)
             {

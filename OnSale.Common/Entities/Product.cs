@@ -38,7 +38,12 @@ namespace OnSale.Common.Entities
         [Display(Name = "Image")]
         public string ImageFullPath => ProductImages == null || ProductImages.Count == 0
             ? $"https://localhost:44342/images/noimage.png"
-            : ProductImages.FirstOrDefault().ImageFullPath;
+            : ProductImages.FirstOrDefault().ImageFullPath;       
+        
+        [Display(Name = "Image")]
+        public string ImageFullPathApi => ProductImages == null || ProductImages.Count == 0
+            ? $"https://localhost:44342/images/noimage.png"
+            : ProductImages.FirstOrDefault().ImageFullPathApi;
     }
 
 }

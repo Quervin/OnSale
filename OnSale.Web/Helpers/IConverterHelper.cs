@@ -9,9 +9,14 @@ namespace OnSale.Web.Helpers
 {
     public interface IConverterHelper
     {
-        Category ToCategory(CategoryViewModel model, Guid imageId, bool isNew);
+        Category ToCategory(CategoryViewModel model, Guid imageId, string ImageUrl, bool isNew);
 
         CategoryViewModel ToCategoryViewModel(Category category);
+
+        Task<Product> ToProductAsync(ProductViewModel model, bool isNew);
+
+        ProductViewModel ToProductViewModel(Product product);
+
     }
 
 }
