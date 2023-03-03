@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using OnSale.Common.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,14 @@ namespace OnSale.Web.Helpers
         public void DeleteImage(string pathImage)
         {
             File.Delete($"{Directory.GetCurrentDirectory()}\\wwwroot{pathImage.Substring(1)}");
+        }
+
+        public void DeleteListImage(ICollection<ProductImage> ListpathImage)
+        {
+            foreach (var item in ListpathImage)
+            {
+                File.Delete($"{Directory.GetCurrentDirectory()}\\wwwroot{item.ImageUrl.Substring(1)}");
+            }
         }
 
         public async Task<string> UploadImageAsync(IFormFile imageFile, string containerName)
