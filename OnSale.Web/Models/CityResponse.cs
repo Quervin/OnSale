@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 
 namespace OnSale.Web.Models
 {
-    public class ContriesResponse
+    public class CityResponse
     {
         public int Id { get; set; }
 
         public string Name { get; set; }
-
-        public List<DepartmentResponse> Departments { get; set; }
     }
 }
