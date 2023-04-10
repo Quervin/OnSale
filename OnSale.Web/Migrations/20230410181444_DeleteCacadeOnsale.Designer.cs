@@ -10,8 +10,8 @@ using OnSale.Web.Data;
 namespace OnSale.Web.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230410171531_InitOnsale")]
-    partial class InitOnsale
+    [Migration("20230410181444_DeleteCacadeOnsale")]
+    partial class DeleteCacadeOnsale
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -169,8 +169,9 @@ namespace OnSale.Web.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasIndex("Name", "DepartmentId")
+                        .IsUnique()
+                        .HasFilter("[DepartmentId] IS NOT NULL");
 
                     b.ToTable("Cities");
                 });
@@ -209,8 +210,9 @@ namespace OnSale.Web.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasIndex("Name", "CountryId")
+                        .IsUnique()
+                        .HasFilter("[CountryId] IS NOT NULL");
 
                     b.ToTable("Departments");
                 });
@@ -437,16 +439,18 @@ namespace OnSale.Web.Migrations
 
             modelBuilder.Entity("OnSale.Common.Entities.City", b =>
                 {
-                    b.HasOne("OnSale.Common.Entities.Department")
+                    b.HasOne("OnSale.Common.Entities.Department", "Department")
                         .WithMany("Cities")
-                        .HasForeignKey("DepartmentId");
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("OnSale.Common.Entities.Department", b =>
                 {
-                    b.HasOne("OnSale.Common.Entities.Country")
+                    b.HasOne("OnSale.Common.Entities.Country", "Country")
                         .WithMany("Departments")
-                        .HasForeignKey("CountryId");
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("OnSale.Common.Entities.OrderDetail", b =>
