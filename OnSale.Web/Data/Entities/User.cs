@@ -34,16 +34,15 @@ namespace OnSale.Web.Data.Entities
         [Display(Name = "Image")]
         public string ImageUrl { get; set; }
 
-        //TODO: Pending to put the correct paths
         [Display(Name = "Image")]
         public string ImageFullPath => ImageId == Guid.Empty
-            ? $"https://localhost:44342/images/noimage.png"
+            ? $"https://onsalehidalgo.azurewebsites.net/images/noimage.png"
             : $"https://onsale.blob.core.windows.net/users/{ImageId}";        
         
         [Display(Name = "Image")]
         public string ImageFullPathApi => ImageId == Guid.Empty
-            ? $"https://localhost:44342/images/noimage.png"
-            : $"https://localhost:44342{ImageUrl.Substring(1)}";
+            ? $"https://onsalehidalgo.azurewebsites.net/images/noimage.png"
+            : $"https://onsalehidalgo.azurewebsites.net{ImageUrl.Substring(1)}";
 
         [Display(Name = "User Type")]
         public UserType UserType { get; set; }
