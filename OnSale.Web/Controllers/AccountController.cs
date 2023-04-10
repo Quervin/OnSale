@@ -1,4 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OnSale.Common.Entities;
+using OnSale.Common.Enums;
+using OnSale.Web.Data;
+using OnSale.Web.Data.Entities;
 using OnSale.Web.Helpers;
 using OnSale.Web.Models;
 using System;
@@ -10,11 +15,24 @@ namespace OnSale.Web.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
+        private readonly ICombosHelper _combosHelper;
+        private readonly IBlobHelper _blobHelper;
+        private readonly IImageHelper _imageHelper;
 
-        public AccountController(IUserHelper userHelper)
+        public AccountController(
+            DataContext dataContex,
+            IUserHelper userHelper,
+            ICombosHelper combosHelper,
+            IBlobHelper blobHelper,
+            IImageHelper imageHelper)
         {
+            _context = dataContex;
             _userHelper = userHelper;
+            _combosHelper = combosHelper;
+            _blobHelper = blobHelper;
+            _imageHelper = imageHelper;
         }
 
         public IActionResult Login()
@@ -59,6 +77,92 @@ namespace OnSale.Web.Controllers
         {
             return View();
         }
+
+        public IActionResult Register()
+        {
+            AddUserViewModel model = new AddUserViewModel
+            {
+                Countries = _combosHelper.GetComboCountries(),
+                Departments = _combosHelper.GetComboDepartments(0),
+                Cities = _combosHelper.GetComboCities(0),
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(AddUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                Guid imageId = Guid.Empty;
+                var path = model.ImageUrl;
+
+                if (model.ImageFile != null)
+                {
+                    //imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "users");
+                    path = await _imageHelper.UploadImageAsync(model.ImageFile, "users");
+                }
+
+                User user = await _userHelper.AddUserAsync(model, imageId, path, UserType.User);
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "This email is already used.");
+                    model.Countries = _combosHelper.GetComboCountries();
+                    model.Departments = _combosHelper.GetComboDepartments(model.CountryId);
+                    model.Cities = _combosHelper.GetComboCities(model.DepartmentId);
+                    return View(model);
+                }
+
+                LoginViewModel loginViewModel = new LoginViewModel
+                {
+                    Password = model.Password,
+                    RememberMe = false,
+                    Username = model.Username
+                };
+
+                var result2 = await _userHelper.LoginAsync(loginViewModel);
+
+                if (result2.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            model.Countries = _combosHelper.GetComboCountries();
+            model.Departments = _combosHelper.GetComboDepartments(model.CountryId);
+            model.Cities = _combosHelper.GetComboCities(model.DepartmentId);
+            return View(model);
+        }
+
+
+        public JsonResult GetDepartments(int countryId)
+        {
+            Country country = _context.Countries
+                .Include(c => c.Departments)
+                .FirstOrDefault(c => c.Id == countryId);
+            if (country == null)
+            {
+                return null;
+            }
+
+            return Json(country.Departments.OrderBy(d => d.Name));
+        }
+
+        public JsonResult GetCities(int departmentId)
+        {
+            Department department = _context.Departments
+                .Include(d => d.Cities)
+                .FirstOrDefault(d => d.Id == departmentId);
+            if (department == null)
+            {
+                return null;
+            }
+
+            return Json(department.Cities.OrderBy(c => c.Name));
+        }
+
 
     }
 
